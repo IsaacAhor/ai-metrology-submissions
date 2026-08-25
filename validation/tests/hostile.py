@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # /// script
 # requires-python = ">=3.10"
-# dependencies = ["PyYAML~=6.0"]
+# dependencies = ["PyYAML~=6.0", "check-jsonschema~=0.38"]
 # ///
 """Every hostile submission found by review, and what must happen to each.
 
@@ -27,8 +27,8 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
-import re
 import json
+import re
 import subprocess
 import sys
 import tempfile
