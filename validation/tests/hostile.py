@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import os
 import re
 import subprocess
 import sys
@@ -38,6 +39,20 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 VALIDATOR = REPO_ROOT / "validation" / "validate_submission.py"
 RESULT_FILE = "result.json"
 SCHEMA_STEP = "check-jsonschema"
+
+# The environment every case gives its child process, with GITHUB_ACTIONS removed.
+#
+# `FORBIDDEN` below rests on a simple invariant: with annotations off, *any* workflow
+# command in the output came from the submission, so it is an injection. That is only
+# true while annotations are off — and `emit_annotations` turns itself on from
+# GITHUB_ACTIONS, which every runner sets. Inherit that variable and the validator
+# emits its own perfectly correct `::error ...::` lines, the corpus reads each one as
+# a leak, and every case that reports a finding fails. Locally that never happened, so
+# the suite was green for as long as nobody ran it in CI.
+#
+# The fix is not to loosen the pattern — it is for the corpus to decide the
+# environment its subject runs in, rather than inheriting whatever the runner had.
+CASE_ENV = {key: value for key, value in os.environ.items() if key != "GITHUB_ACTIONS"}
 
 VALID = """\
 schema_version: "1.0"
@@ -140,7 +155,7 @@ def run_case(filename: str, contents: str, verbose: bool) -> tuple[bool, str]:
         result = subprocess.run(
             [sys.executable, str(VALIDATOR), "inspect", "--files",
              f"submissions/{filename}", "--stage-dir", str(root / "stage")],
-            cwd=root, capture_output=True, text=True, timeout=120,
+            cwd=root, capture_output=True, text=True, timeout=120, env=CASE_ENV,
         )  # fmt: skip
         output = result.stdout + result.stderr
         code = result.returncode
@@ -157,6 +172,7 @@ def run_case(filename: str, contents: str, verbose: bool) -> tuple[bool, str]:
                     capture_output=True,
                     text=True,
                     timeout=120,
+                    env=CASE_ENV,
                 )
                 output += schema_run.stdout + schema_run.stderr
                 code = schema_run.returncode
