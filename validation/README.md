@@ -84,7 +84,6 @@ failed lookup is not a verdict on somebody's submission.
 | `schemas/v1.json` | The submission format, machine-readable. One file per **major** format version, so a file written against `1.x` keeps validating after the format moves on. |
 | `validate_submission.py` | The checks a schema cannot express, plus the explainer for step 2's output. |
 | `check-pr.sh`, `check-prs.sh` | The reviewer commands above. |
-| `publish_check_runs.py` | Maintainers only — publishes the result as a check on the pull request. See the runbook. |
 
 The workflow that runs these on your pull request is
 [`.github/workflows/validate-submission.yml`](../.github/workflows/validate-submission.yml).

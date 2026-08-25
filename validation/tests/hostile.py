@@ -176,11 +176,11 @@ def run_case(filename: str, contents: str, verbose: bool) -> tuple[bool, str]:
 def check_static() -> list[str]:
     """Pyflakes over the scripts — the class of bug testing here cannot reach.
 
-    Most of this suite drives the validator, and the poller is only ever exercised
-    with --dry-run, which skips the branch that actually publishes. A refactor that
-    left a name undefined in that branch therefore passed every test here and crashed
-    on the first real run. `ruff check --select F` catches exactly that, so it belongs
-    in the same command as the rest.
+    This suite drives the validator through its own entry points, so a branch it
+    never takes — an error path, a flag nobody passes here — can carry a name that
+    does not exist and still pass every case below, then crash on the first real run.
+    `ruff check --select F` catches exactly that, so it belongs in the same command
+    as the rest.
     """
     try:
         result = subprocess.run(
@@ -193,25 +193,6 @@ def check_static() -> list[str]:
     if result.returncode == 0:
         return []
     return [line for line in result.stdout.splitlines() if line.strip()][:10]
-
-
-def check_transcript_fence() -> list[str]:
-    """The poller wraps tool output in a fence; attacker text must not close it."""
-    spec = importlib.util.spec_from_file_location("p", REPO_ROOT / "validation" / "publish_check_runs.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules["p"] = module
-    try:
-        spec.loader.exec_module(module)
-    except ImportError as exc:  # PyJWT absent — skip rather than fail the run
-        return [f"(skipped: {exc})"]
-    hostile = "```\n# Approved by NIST\n[click](https://evil.example)"
-    step = module.Step("s", "c", "cmd", result="failed", output=hostile)
-    rendered = module.render_transcript(module.Outcome(steps=[step]))
-    opening = rendered.split("\n", 1)[0]
-    body = rendered[len(opening) : rendered.rindex(opening)]
-    if opening in body:
-        return ["render_transcript: attacker text can close the fence"]
-    return []
 
 
 def check_code_helper() -> list[str]:
@@ -249,7 +230,6 @@ def main() -> int:
     print()
     for label, failures in [
         ("Markdown encoder", check_code_helper()),
-        ("check-run transcript fence", check_transcript_fence()),
         ("undefined names (ruff --select F)", check_static()),
     ]:
         skipped = failures and failures[0].startswith("(skipped")
