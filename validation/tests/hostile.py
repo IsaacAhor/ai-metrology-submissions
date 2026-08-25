@@ -248,15 +248,23 @@ def main() -> int:
             print(f"        {failure}")
 
     print()
+    incomplete = ""
+    if skipped:
+        count = f"{len(skipped)} check{'' if len(skipped) == 1 else 's'}"
+        incomplete = f"{count} did not run: {', '.join(skipped)}."
     if failed:
         print(f"{failed} regression(s). Each one is something review already found once.")
+        if incomplete:
+            # A regression and a guard that never ran are two separate facts. Printing
+            # only the first sends the reader off to fix it and come back to a run that
+            # still is not a full pass, having never been told why.
+            print(f"Also, {incomplete}")
         return 1
     if skipped:
         # Still 0: a missing optional tool is not somebody's regression. But the run
         # is incomplete, and the last line a reader sees has to say which guards
         # nothing checked this time.
-        count = f"{len(skipped)} check{'' if len(skipped) == 1 else 's'}"
-        print(f"Everything that ran is handled, but {count} did not run: {', '.join(skipped)}.")
+        print(f"Everything that ran is handled, but {incomplete}")
         print("This is not a full pass — re-run with those available before relying on it.")
         return 0
     print("All hostile inputs are handled.")
