@@ -228,20 +228,37 @@ def main() -> int:
             failed += 1
 
     print()
+    skipped = []
     for label, failures in [
         ("Markdown encoder", check_code_helper()),
         ("undefined names (ruff --select F)", check_static()),
     ]:
-        skipped = failures and failures[0].startswith("(skipped")
-        print(f"  {'PASS' if not failures or skipped else 'FAIL'}  {label}")
+        # A check that could not run is not a check that passed. Printing PASS for it
+        # is how a guard stays green for months after it quietly stopped running, which
+        # is the failure this corpus exists to prevent — so a skip says so, by name,
+        # and the closing line stops claiming everything is handled.
+        if failures and failures[0].startswith("(skipped"):
+            verdict = "SKIP"
+            skipped.append(label)
+        else:
+            verdict = "FAIL" if failures else "PASS"
+            failed += len(failures)
+        print(f"  {verdict}  {label}")
         for failure in failures:
             print(f"        {failure}")
-        failed += 0 if skipped else len(failures)
 
     print()
     if failed:
         print(f"{failed} regression(s). Each one is something review already found once.")
         return 1
+    if skipped:
+        # Still 0: a missing optional tool is not somebody's regression. But the run
+        # is incomplete, and the last line a reader sees has to say which guards
+        # nothing checked this time.
+        count = f"{len(skipped)} check{'' if len(skipped) == 1 else 's'}"
+        print(f"Everything that ran is handled, but {count} did not run: {', '.join(skipped)}.")
+        print("This is not a full pass — re-run with those available before relying on it.")
+        return 0
     print("All hostile inputs are handled.")
     return 0
 
