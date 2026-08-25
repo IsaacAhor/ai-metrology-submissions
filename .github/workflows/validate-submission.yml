@@ -117,7 +117,10 @@ jobs:
       # dispatched from — normally main, which is the same merge base and so the same
       # diff.
       BASE_SHA: ${{ github.event.pull_request.base.sha || 'HEAD' }}
-      STAGE_DIR: ${{ runner.temp }}/submission
+      # STAGE_DIR is NOT here. The `runner` context is not available in a job-level
+      # `env:` block — only inside steps — and a workflow that reaches for it there is
+      # rejected before any job starts, so the check does not fail, it ceases to exist.
+      # It is set on each step that needs it instead.
 
     steps:
       # VERIFY THE PINS BEFORE MERGING. Actions are pinned to full commit SHAs and
@@ -190,6 +193,7 @@ jobs:
           # is what stops a crafted title or description from becoming shell commands.
           PR_BODY: ${{ github.event.pull_request.body }}
           PR_LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          STAGE_DIR: ${{ runner.temp }}/submission
         run: |
           # A manual run has no description to read, and the expression above
           # substitutes an empty string rather than nothing at all — which the
@@ -234,6 +238,8 @@ jobs:
 
       - name: Explain any schema errors
         if: failure() && steps.inspect.outputs.validate == 'true'
+        env:
+          STAGE_DIR: ${{ runner.temp }}/submission
         run: |
           python3 validation/validate_submission.py explain \
             "$STAGE_DIR/schema-errors.json" --stage-dir "$STAGE_DIR"
