@@ -1,0 +1,114 @@
+schema_version: "1.0"
+
+name: Adverse-Action Reason Source-to-Notice Traceability and Reconciliation
+
+applied_definition: |
+  A qualitative, record-level reconciliation method for AI- or
+  machine-learning-assisted credit decision systems. For each recorded adverse
+  decision, the method evaluates a declared chain consisting of the final
+  decision component; adverse source-driver contributions; the reason-selection
+  method; governed reason-code mappings; recorded reason outputs; the applicable
+  underwriting policy and notice-template versions; and visible reason segments
+  in the rendered notice record.
+
+  The method emits named exceptions when one or more of these invariants fail:
+
+  1. the final decision component and, for a combined decision, its failed source
+     components are recorded;
+  2. each output driver is an adverse contributor in an eligible recorded source
+     component, and its recorded rank matches deterministic ranking under the
+     declared convention;
+  3. mapped principal source drivers within the predeclared review limit are not
+     omitted;
+  4. each output pins the applicable mapping identifier, mapping version,
+     mapping effective date, policy version, selection-method identifier and
+     version, and notice-template identifier and version;
+  5. the disclosed reason text reconciles to the controlled mapped text after
+     case and whitespace normalization; and
+  6. each visible rendered-notice reason segment reconciles to one recorded
+     reason output by identifier, code, text, and template version.
+
+  Results are reported as coverage plus counts and rates by exception type; the
+  method does not collapse distinct failures into a weighted composite score. A
+  clean result means that the supplied records are internally consistent with
+  the declared and versioned convention. It does not establish that the records
+  are truthful, that the underlying explanation is faithful or causal, that the
+  selected drivers are uniquely principal, that the language is meaningful to
+  a recipient, or that a notice is legally sufficient.
+
+submitter_organizations:
+  - Independent Researcher
+
+contact_email: n.isaacahor@gmail.com
+
+ai_rmf_characteristics:
+  - Accountable & Transparent
+  - Explainable & Interpretable
+
+primary_tevv_application:
+  - Interpretability & Explanation Evaluation
+
+ai_lifecycle_stages:
+  - Build
+  - Deploy
+  - Operate & Monitor
+
+object_of_measurement:
+  - system
+
+model_specificity: model agnostic
+
+domain_specificity: domain specific — credit underwriting and adverse-action reason records
+
+usage_details: |
+  Apply the method during predeployment review, material-change review, and
+  periodic monitoring when a credit decision system produces reason outputs and
+  a separate notice-rendering process. The evaluator supplies versioned records
+  for the decision path, source drivers, mappings, policies, selection methods,
+  output reasons, templates, and rendered reason segments. The method is most
+  useful as a reproducible provenance and change-control check alongside, not in
+  place of, an explanation-method evaluation and human review of recipient-facing
+  language.
+
+known_failure_modes: |
+  Internally consistent but false, incomplete, or post hoc records can pass. A
+  deterministic ranking can reproduce the declared convention while the
+  convention itself is unsuitable. Text normalization detects controlled-text
+  drift but not semantic ambiguity, readability, or recipient understanding.
+  Missing production context, human review, or representative field data limits
+  external validity. The reference implementation uses synthetic data and is not
+  evidence of production effectiveness or institutional adoption.
+
+modality:
+  - structured data
+  - text
+
+references:
+  - >-
+    Phillips, P. J., Hahn, C. A., Fontana, P. C., Yates, A., Greene, K. K.,
+    Broniatowski, D. A., and Przybocki, M. A. (2021). Four Principles of
+    Explainable Artificial Intelligence. NISTIR 8312.
+    https://doi.org/10.6028/NIST.IR.8312
+  - >-
+    Tabassi, E. (2023). Artificial Intelligence Risk Management Framework
+    (AI RMF 1.0). NIST AI 100-1.
+    https://doi.org/10.6028/NIST.AI.100-1
+  - >-
+    Hall, P., Cox, B., Dickerson, S., Ravi Kannan, A., Kulkarni, R., and
+    Schmidt, N. (2021). A United States Fair Lending Perspective on Machine
+    Learning. Frontiers in Artificial Intelligence, 4, 695301.
+    https://doi.org/10.3389/frai.2021.695301
+
+implementation_resources:
+  - https://github.com/IsaacAhor/small-business-credit-model-governance/tree/v0.12.0/docs/adverse-action-reason-run-kit
+  - https://github.com/IsaacAhor/small-business-credit-model-governance/blob/v0.12.0/scripts/run_adverse_action_reason_benchmark.py
+  - https://github.com/IsaacAhor/small-business-credit-model-governance/tree/v0.12.0/data/synthetic/adverse-action-reason-benchmark
+
+related_metrics:
+  - Explanation faithfulness under the selected explanation method
+  - Human evaluation of reason clarity and meaningfulness
+  - Exception coverage rate by source-to-notice invariant
+
+computational_requirements: Python 3.10 or newer; no GPU required for the synthetic reference implementation
+
+usage_rights: Apache License 2.0
