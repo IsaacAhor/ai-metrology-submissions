@@ -3,38 +3,19 @@ schema_version: "1.0"
 name: Adverse-Action Reason Source-to-Notice Traceability and Reconciliation
 
 applied_definition: |
-  A qualitative, record-level reconciliation method for AI- or
-  machine-learning-assisted credit decision systems. For each recorded adverse
-  decision, the method evaluates a declared chain consisting of the final
-  decision component; adverse source-driver contributions; the reason-selection
-  method; governed reason-code mappings; recorded reason outputs; the applicable
-  underwriting policy and notice-template versions; and visible reason segments
-  in the rendered notice record.
-
-  The method emits named exceptions when one or more of these invariants fail:
-
-  1. the final decision component and, for a combined decision, its failed source
-     components are recorded;
-  2. each output driver is an adverse contributor in an eligible recorded source
-     component, and its recorded rank matches deterministic ranking under the
-     declared convention;
-  3. mapped principal source drivers within the predeclared review limit are not
-     omitted;
-  4. each output pins the applicable mapping identifier, mapping version,
-     mapping effective date, policy version, selection-method identifier and
-     version, and notice-template identifier and version;
-  5. the disclosed reason text reconciles to the controlled mapped text after
-     case and whitespace normalization; and
-  6. each visible rendered-notice reason segment reconciles to one recorded
-     reason output by identifier, code, text, and template version.
-
-  Results are reported as coverage plus counts and rates by exception type; the
-  method does not collapse distinct failures into a weighted composite score. A
-  clean result means that the supplied records are internally consistent with
-  the declared and versioned convention. It does not establish that the records
-  are truthful, that the underlying explanation is faithful or causal, that the
-  selected drivers are uniquely principal, that the language is meaningful to
-  a recipient, or that a notice is legally sufficient.
+  A qualitative, record-level process-conformance method for AI- or
+  machine-learning-assisted credit decision systems. For each recorded declined
+  decision, it tests whether a declared and versioned chain remains internally
+  consistent from the final decision and adverse source-driver contributions
+  through deterministic reason selection, governed reason-code mappings,
+  recorded reason outputs, and visible notice segments. It emits a named
+  exception for each failed chain invariant rather than a weighted composite
+  score. Results report execution status for source-to-reason and rendered-notice
+  checks, total exception count, exception types, and record-level details. A
+  result is clean only when every applicable check ran and emitted no exception;
+  clean means only that the supplied records conform to the declared chain, not
+  that they are truthful, causally faithful, legally sufficient, or understandable
+  to a recipient.
 
 submitter_organizations:
   - Independent Researcher
@@ -65,10 +46,38 @@ usage_details: |
   periodic monitoring when a credit decision system produces reason outputs and
   a separate notice-rendering process. The evaluator supplies versioned records
   for the decision path, source drivers, mappings, policies, selection methods,
-  output reasons, templates, and rendered reason segments. The method is most
-  useful as a reproducible provenance and change-control check alongside, not in
-  place of, an explanation-method evaluation and human review of recipient-facing
-  language.
+  output reasons, templates, and rendered reason segments.
+
+  The method checks six invariants:
+
+  1. the final decision component and, for a combined decision, its failed source
+     components are recorded;
+  2. each output driver is an adverse contributor in an eligible recorded source
+     component, and its rank matches deterministic ranking under the declared
+     convention;
+  3. mapped principal source drivers within the predeclared review limit are not
+     omitted;
+  4. each output pins the applicable mapping, policy, reason-selection, and
+     notice-template identifiers and versions, including the mapping effective
+     date;
+  5. the disclosed reason text reconciles to the controlled mapped text after
+     case and whitespace normalization; and
+  6. each declined decision with reason outputs has one rendered notice, each
+     output appears exactly once in that notice, and each visible segment
+     reconciles to its output by identifier, code, normalized text, and template
+     version.
+
+  The cited Regulation B provisions and CFPB Circular 2022-03 ground the
+  decision-component, source-driver, principal-reason, and declared-selection-
+  method checks: disclosed reasons must relate to factors actually considered or
+  scored, and a principal scored reason may not be omitted. The circular applies
+  the specific-and-accurate-reasons requirement to complex algorithms and notes
+  the need to validate the accuracy of post hoc explanation approximations.
+  Neither source prescribes this particular method. Use the method alongside,
+  not in place of, explanation-method evaluation and human review of recipient-
+  facing language. The published implementation is an individual open-source
+  project using synthetic records; no consumer-finance organization is
+  documented as having adopted the submitted approach.
 
 known_failure_modes: |
   Internally consistent but false, incomplete, or post hoc records can pass. A
@@ -85,19 +94,14 @@ modality:
 
 references:
   - >-
-    Phillips, P. J., Hahn, C. A., Fontana, P. C., Yates, A., Greene, K. K.,
-    Broniatowski, D. A., and Przybocki, M. A. (2021). Four Principles of
-    Explainable Artificial Intelligence. NISTIR 8312.
-    https://doi.org/10.6028/NIST.IR.8312
+    Consumer Financial Protection Bureau. Regulation B, 12 CFR 1002.9(b)(2),
+    with Official Interpretations 9(b)(2)-2, -4, -5, and -7.
+    https://www.consumerfinance.gov/rules-policy/regulations/1002/9/
   - >-
-    Tabassi, E. (2023). Artificial Intelligence Risk Management Framework
-    (AI RMF 1.0). NIST AI 100-1.
-    https://doi.org/10.6028/NIST.AI.100-1
-  - >-
-    Hall, P., Cox, B., Dickerson, S., Ravi Kannan, A., Kulkarni, R., and
-    Schmidt, N. (2021). A United States Fair Lending Perspective on Machine
-    Learning. Frontiers in Artificial Intelligence, 4, 695301.
-    https://doi.org/10.3389/frai.2021.695301
+    Consumer Financial Protection Bureau (2022). Consumer Financial Protection
+    Circular 2022-03: Adverse action notification requirements in connection
+    with credit decisions based on complex algorithms.
+    https://www.consumerfinance.gov/compliance/circulars/circular-2022-03-adverse-action-notification-requirements-in-connection-with-credit-decisions-based-on-complex-algorithms/
 
 implementation_resources:
   - https://github.com/IsaacAhor/small-business-credit-model-governance/tree/v0.12.0/docs/adverse-action-reason-run-kit
@@ -107,7 +111,6 @@ implementation_resources:
 related_metrics:
   - Explanation faithfulness under the selected explanation method
   - Human evaluation of reason clarity and meaningfulness
-  - Exception coverage rate by source-to-notice invariant
 
 computational_requirements: Python 3.10 or newer; no GPU required for the synthetic reference implementation
 
