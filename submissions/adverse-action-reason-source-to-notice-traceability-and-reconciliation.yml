@@ -124,6 +124,8 @@ implementation_resources:
   - https://github.com/IsaacAhor/small-business-credit-model-governance/tree/v0.12.0/docs/adverse-action-reason-run-kit
   - https://github.com/IsaacAhor/small-business-credit-model-governance/blob/v0.12.0/scripts/run_adverse_action_reason_benchmark.py
   - https://github.com/IsaacAhor/small-business-credit-model-governance/tree/v0.12.0/data/synthetic/adverse-action-reason-benchmark
+  - https://github.com/IsaacAhor/small-business-credit-model-governance/blob/v0.12.0/src/credit_gov/monitoring.py
+  - https://github.com/IsaacAhor/small-business-credit-model-governance/blob/v0.12.0/src/credit_gov/schemas/validators.py
 
 related_metrics:
   - Explanation faithfulness under the selected explanation method
